@@ -21,7 +21,7 @@ function Register() {
     try {
 
       const response = await axios.post(
-        "http://localhost:8080/api/auth/register",
+        "https://smart-parking-backend-gtsr.onrender.com/api/auth/register",
         registerData
       );
 

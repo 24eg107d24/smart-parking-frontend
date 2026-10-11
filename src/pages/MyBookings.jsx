@@ -11,7 +11,7 @@ function MyBookings() {
   const [locations, setLocations] = useState([]);
   const [message, setMessage] = useState("");
 
-  const API = "http://localhost:8080";
+  const API = "https://smart-parking-backend-gtsr.onrender.com";
 
   const getConfig = () => ({
     headers: {

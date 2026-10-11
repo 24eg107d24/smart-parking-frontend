@@ -19,7 +19,7 @@ function Login() {
     try {
 
       const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
+        "https://smart-parking-backend-gtsr.onrender.com/api/auth/login",
         loginData
       );
 

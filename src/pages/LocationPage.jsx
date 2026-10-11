@@ -11,7 +11,7 @@ function LocationPage() {
   const [slots, setSlots] = useState([]);
   const [message, setMessage] = useState("");
 
-  const API = "http://localhost:8080";
+  const API = "https://smart-parking-backend-gtsr.onrender.com";
 
   const getConfig = () => {
 
