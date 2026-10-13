@@ -1,9 +1,9 @@
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
 function Login() {
-
   const navigate = useNavigate();
 
   const [loginData, setLoginData] = useState({
@@ -12,30 +12,34 @@ function Login() {
   });
 
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const login = async (e) => {
     e.preventDefault();
+    setMessage("");
+    setLoading(true);
 
     try {
-
       const response = await axios.post(
-        "https://smart-parking-backend-gtsr.onrender.com/api/auth/login",
+        "http://localhost:8080/api/auth/login",
         loginData
       );
 
+      const token =
+        typeof response.data === "string"
+          ? response.data
+          : response.data?.token;
+
       if (
-        response.data ===
-        "Invalid email or password"
+        !token ||
+        token === "Invalid email or password" ||
+        token === "Email already registered"
       ) {
-        setMessage("❌ Wrong email or password");
+        setMessage("❌ Invalid email or password.");
         return;
       }
 
-      localStorage.setItem(
-        "token",
-        response.data
-      );
-
+      localStorage.setItem("token", token);
       setMessage("✅ Login successful!");
 
       setTimeout(() => {
@@ -43,27 +47,31 @@ function Login() {
       }, 500);
 
     } catch (error) {
+      console.error("LOGIN ERROR:", error);
 
-      console.log("LOGIN ERROR:", error);
-
-      setMessage(
-        "❌ Wrong email or password"
-      );
+      if (error.response) {
+        setMessage(
+          `❌ Login failed (${error.response.status}). ${
+            typeof error.response.data === "string"
+              ? error.response.data
+              : "Please check your credentials."
+          }`
+        );
+      } else {
+        setMessage(
+          "❌ Cannot connect to the backend. Make sure Spring Boot is running on port 8080."
+        );
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="auth-page">
-
       <div className="auth-card">
-
-        <h1>
-          🚗 Smart Parking
-        </h1>
-
-        <h2>
-          Login
-        </h2>
+        <h1>🚗 Smart Parking</h1>
+        <h2>Login</h2>
 
         {message && (
           <div className="message">
@@ -72,7 +80,6 @@ function Login() {
         )}
 
         <form onSubmit={login}>
-
           <input
             type="email"
             placeholder="Email"
@@ -99,24 +106,19 @@ function Login() {
             required
           />
 
-          <button type="submit">
-            Login
+          <button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
           </button>
-
         </form>
 
-        <p>
-          Don't have an account?
-        </p>
+        <p>Don't have an account?</p>
 
         <Link to="/register">
-          <button className="secondary">
+          <button type="button" className="secondary">
             Create Account
           </button>
         </Link>
-
       </div>
-
     </div>
   );
 }

@@ -19,7 +19,7 @@ function BookingPage() {
     durationHours: "1"
   });
 
-  const API = "https://smart-parking-backend-gtsr.onrender.com";
+  const API = "http://localhost:8080";
 
   const getConfig = () => ({
     headers: {

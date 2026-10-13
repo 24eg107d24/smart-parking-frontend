@@ -1,29 +1,18 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function Dashboard() {
+const API = "http://localhost:8080";
 
+function Dashboard() {
   const navigate = useNavigate();
 
-  const [locations, setLocations] = useState([]);
+  const [slots, setSlots] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  const API = "http://localhost:8080";
-
-  const getConfig = () => {
-
-    const token = localStorage.getItem("token");
-
-    return {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    };
-  };
-
   useEffect(() => {
-
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -31,160 +20,93 @@ function Dashboard() {
       return;
     }
 
-    loadLocations();
+    const loadSlots = async () => {
+      try {
+        const response = await axios.get(
+          `${API}/api/parking/slots`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            },
+            timeout: 10000
+          }
+        );
 
-  }, []);
+        setSlots(response.data);
+      } catch (error) {
+        console.error("PARKING ERROR:", error);
 
-  const loadLocations = async () => {
+        if (error.response?.status === 401 ||
+            error.response?.status === 403) {
+          setMessage("Your login session may have expired. Please log in again.");
+        } else {
+          setMessage("Unable to load parking slots. Check that the backend is running.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    try {
-
-      const response = await axios.get(
-        `${API}/api/locations`,
-        getConfig()
-      );
-
-      setLocations(response.data);
-
-    } catch (error) {
-
-      console.log(
-        "LOCATION ERROR:",
-        error
-      );
-
-      setMessage(
-        "❌ Unable to load parking locations"
-      );
-    }
-  };
-
-  const openLocation = (locationId) => {
-
-    navigate(`/location/${locationId}`);
-
-  };
-
-  const openMyBookings = () => {
-
-    navigate("/my-bookings");
-
-  };
+    loadSlots();
+  }, [navigate]);
 
   const logout = () => {
-
     localStorage.removeItem("token");
-
     navigate("/login");
-
   };
 
   return (
     <div className="app">
-
       <header>
-
         <div>
-
-          <h1>
-            🚗 Smart Parking
-            Management System
-          </h1>
-
-          <p>
-            Find and reserve your parking slot
-          </p>
-
+          <h1>🚗 Smart Parking Management System</h1>
+          <p>Find and reserve your parking slot</p>
         </div>
 
         <div>
-
-          <button
-            onClick={openMyBookings}
-          >
+          <button onClick={() => navigate("/my-bookings")}>
             📋 My Bookings
           </button>
 
-          <button
-            className="logout"
-            onClick={logout}
-          >
+          <button className="logout" onClick={logout}>
             Logout
           </button>
-
         </div>
-
       </header>
 
-      {message && (
-        <div className="message">
-          {message}
-        </div>
-      )}
+      {message && <div className="message">{message}</div>}
 
       <section>
+        <h2>📍 Find Parking</h2>
+        <p>Select an available parking slot to make a booking.</p>
 
-        <h2>
-          📍 Find Parking
-        </h2>
-
-        <p>
-          Select a parking location to view
-          available parking slots.
-        </p>
-
-        <div className="location-container">
-
-          {locations.length === 0 ? (
-
-            <p>
-              Loading parking locations...
-            </p>
-
-          ) : (
-
-            locations.map((location) => (
-
+        {loading ? (
+          <p>Loading parking slots...</p>
+        ) : slots.length === 0 ? (
+          <p>No parking slots found. Add slots to your database first.</p>
+        ) : (
+          <div className="slot-container">
+            {slots.map((slot) => (
               <div
-                className="location-card"
-                key={location.id}
+                className={`slot ${slot.occupied ? "occupied" : "available"}`}
+                key={slot.id}
               >
-
-                <h3>
-                  📍 {location.name}
-                </h3>
-
+                <h3>🅿️ {slot.slotNumber}</h3>
+                <p>Vehicle: {slot.vehicleType}</p>
                 <p>
-                  📌 {location.address}
+                  Status: {slot.occupied ? "🔴 Occupied" : "🟢 Available"}
                 </p>
 
-                <p>
-                  🌆 {location.city}
-                </p>
-
-                <p>
-                  🅿️ Total Slots:{" "}
-                  {location.totalSlots}
-                </p>
-
-                <button
-                  onClick={() =>
-                    openLocation(location.id)
-                  }
-                >
-                  View Parking
-                </button>
-
+                {!slot.occupied && (
+                  <button onClick={() => navigate(`/book/${slot.id}`)}>
+                    Book Slot
+                  </button>
+                )}
               </div>
-
-            ))
-
-          )}
-
-        </div>
-
+            ))}
+          </div>
+        )}
       </section>
-
     </div>
   );
 }
