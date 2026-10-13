@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
-const API = "http://localhost:8080";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 function Register() {
   const navigate = useNavigate();
@@ -43,9 +43,10 @@ function Register() {
       console.error("REGISTER ERROR:", error);
 
       if (error.code === "ECONNABORTED") {
-        setMessage("Request timed out. Check that the backend is running.");
+        setMessage("Request timed out. Please try again.");
       } else if (error.response) {
         const data = error.response.data;
+
         setMessage(
           `Registration failed (${error.response.status}): ${
             typeof data === "string"
@@ -55,7 +56,7 @@ function Register() {
         );
       } else {
         setMessage(
-          "Cannot connect to backend. Make sure Spring Boot is running on port 8080."
+          "Cannot connect to the backend. Please check the backend URL and try again."
         );
       }
     } finally {
