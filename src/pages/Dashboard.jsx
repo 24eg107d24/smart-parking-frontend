@@ -2,8 +2,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
-const API = "http://localhost:8080";
+const API = API_BASE_URL;
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -92,6 +93,11 @@ function Dashboard() {
                 key={slot.id}
               >
                 <h3>🅿️ {slot.slotNumber}</h3>
+                {slot.location && (
+                  <p style={{ fontSize: "0.9rem", color: "#4f46e5", fontWeight: "600" }}>
+                    📍 {slot.location.name} ({slot.location.city})
+                  </p>
+                )}
                 <p>Vehicle: {slot.vehicleType}</p>
                 <p>
                   Status: {slot.occupied ? "🔴 Occupied" : "🟢 Available"}

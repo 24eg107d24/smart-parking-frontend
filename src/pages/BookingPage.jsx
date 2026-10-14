@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 function BookingPage() {
 
@@ -19,7 +20,7 @@ function BookingPage() {
     durationHours: "1"
   });
 
-  const API = "http://localhost:8080";
+  const API = API_BASE_URL;
 
   const getConfig = () => ({
     headers: {
